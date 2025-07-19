@@ -1,0 +1,64 @@
+# Nombre del Flujo de Trabajo
+name: Build and Deploy to GitHub Pages
+
+# Disparadores: se ejecuta al hacer push a la rama 'main'
+on:
+  push:
+    branches:
+      - main
+  # También permite ejecutarlo manualmente desde la pestaña "Actions"
+  workflow_dispatch:
+
+# Permisos necesarios para que la Action pueda escribir en GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Define los trabajos que se ejecutarán
+jobs:
+  # 1. Trabajo de Compilación (Build)
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Clona tu repositorio
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Configura Node.js para poder usar npm
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20" # O la versión que use tu proyecto
+          cache: "npm"
+
+      # Instala las dependencias del proyecto
+      - name: Install Dependencies
+        run: npm ci
+
+      # Ejecuta el script de build de tu package.json
+      # ¡Aquí es donde se compila el TSX a JS y se generan los estáticos!
+      - name: Build Project
+        run: npm run build
+
+      # Sube los archivos compilados para que el siguiente trabajo los use
+      - name: Upload production-ready build files
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # A F I N A R : Asegúrate de que 'dist' es el nombre de tu carpeta de salida.
+          # Si tu proyecto la llama 'build' o 'out', cámbialo aquí.
+          path: ./dist
+
+  # 2. Trabajo de Despliegue (Deploy)
+  deploy:
+    # Depende de que el trabajo 'build' haya terminado con éxito
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }} # Muestra la URL del sitio
+    steps:
+      # Despliega los archivos subidos en el paso anterior
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
