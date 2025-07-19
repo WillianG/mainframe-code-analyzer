@@ -21,11 +21,11 @@ La aplicación sigue una arquitectura de cliente ligero, donde el frontend se en
 ```mermaid
 graph TD
     A[Usuario] --> B{Frontend (Browser)};
-    B -- 1. Ingresa código --> C[index.tsx];
-    C -- 2. Prepara y envía petición --> D[Google Gemini API];
-    D -- 3. Analiza código y genera JSON --> C;
-    C -- 4. Renderiza resultados --> E[Análisis Textual (HTML)];
-    C -- 5. Renderiza diagrama --> F[Diagrama de Flujo (Cytoscape.js)];
+    B -- "1. Ingresa código" --> C[index.tsx];
+    C -- "2. Prepara y envía petición" --> D[Google Gemini API];
+    D -- "3. Analiza código y genera JSON" --> C;
+    C -- "4. Renderiza resultados" --> E[Análisis Textual (HTML)];
+    C -- "5. Renderiza diagrama" --> F[Diagrama de Flujo (Cytoscape.js)];
     E --> B;
     F --> B;
 ```
