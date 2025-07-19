@@ -3,26 +3,26 @@ import { GoogleGenAI, Type } from "@google/genai";
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 // DOM Elements
-const tabPaste = document.getElementById('tab-paste')!;
-const tabUpload = document.getElementById('tab-upload')!;
-const panelPaste = document.getElementById('panel-paste')!;
-const panelUpload = document.getElementById('panel-upload')!;
-const codeInput = document.getElementById('code-input') as HTMLTextAreaElement;
-const fileInput = document.getElementById('file-input') as HTMLInputElement;
-const fileNameSpan = document.getElementById('file-name')!;
-const analyzeButton = document.getElementById('analyze-button') as HTMLButtonElement;
-const clearButton = document.getElementById('clear-button') as HTMLButtonElement;
-const resultsSection = document.getElementById('results-section')!;
-const analysisOutput = document.getElementById('analysis-output')!;
-const flowchartContainer = document.getElementById('flowchart-container') as HTMLDivElement;
-const buttonText = analyzeButton.querySelector('.button-text') as HTMLElement;
-const spinner = analyzeButton.querySelector('.spinner') as HTMLElement;
+const tabPaste = document.getElementById('tab-paste');
+const tabUpload = document.getElementById('tab-upload');
+const panelPaste = document.getElementById('panel-paste');
+const panelUpload = document.getElementById('panel-upload');
+const codeInput = document.getElementById('code-input');
+const fileInput = document.getElementById('file-input');
+const fileNameSpan = document.getElementById('file-name');
+const analyzeButton = document.getElementById('analyze-button');
+const clearButton = document.getElementById('clear-button');
+const resultsSection = document.getElementById('results-section');
+const analysisOutput = document.getElementById('analysis-output');
+const flowchartContainer = document.getElementById('flowchart-container');
+const buttonText = analyzeButton.querySelector('.button-text');
+const spinner = analyzeButton.querySelector('.spinner');
 
-let fileContent: string | null = null;
-let activeTab: 'paste' | 'upload' = 'paste';
-let cy: any = null; // Cytoscape instance
+let fileContent = null;
+let activeTab = 'paste';
+let cy = null; // Cytoscape instance
 
-function switchTab(targetTab: 'paste' | 'upload') {
+function switchTab(targetTab) {
     activeTab = targetTab;
     if (targetTab === 'paste') {
         tabPaste.classList.add('active');
@@ -43,13 +43,13 @@ function switchTab(targetTab: 'paste' | 'upload') {
     }
 }
 
-function handleFileSelect(event: Event) {
-    const target = event.target as HTMLInputElement;
+function handleFileSelect(event) {
+    const target = event.target;
     const file = target.files?.[0];
     if (file) {
         const reader = new FileReader();
         reader.onload = (e) => {
-            fileContent = e.target?.result as string;
+            fileContent = e.target?.result;
             fileNameSpan.textContent = file.name;
         };
         reader.onerror = () => {
@@ -60,7 +60,7 @@ function handleFileSelect(event: Event) {
     }
 }
 
-function setLoading(isLoading: boolean) {
+function setLoading(isLoading) {
     if (isLoading) {
         analyzeButton.disabled = true;
         clearButton.disabled = true;
@@ -74,7 +74,7 @@ function setLoading(isLoading: boolean) {
     }
 }
 
-function renderFlowchart(flowchartData: { nodes: any[], edges: any[] }) {
+function renderFlowchart(flowchartData) {
     if (cy) {
         cy.destroy();
     }
@@ -151,15 +151,15 @@ function renderFlowchart(flowchartData: { nodes: any[], edges: any[] }) {
     cy.minZoom(0.5);
 }
 
-function renderResults(data: any) {
+function renderResults(data) {
     analysisOutput.innerHTML = ''; // Clear previous results
     
-    const createSection = (title: string, items: string[], emptyMessage: string) => {
+    const createSection = (title, items, emptyMessage) => {
         const section = document.createElement('div');
         section.innerHTML = `<h4>${title}</h4>`;
         const list = document.createElement('ul');
         if (items && items.length > 0) {
-            items.forEach((item: string) => {
+            items.forEach((item) => {
                 const li = document.createElement('li');
                 li.textContent = item;
                 list.appendChild(li);
@@ -194,7 +194,7 @@ function renderResults(data: any) {
     resultsSection.style.display = 'block';
 }
 
-function renderError(message: string) {
+function renderError(message) {
     analysisOutput.innerHTML = `<p style="color: #d9534f;">${message}</p>`;
     flowchartContainer.innerHTML = '';
     if (cy) {

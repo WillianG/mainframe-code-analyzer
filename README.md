@@ -7,94 +7,83 @@ Esta aplicación web es una herramienta diseñada para ayudar a los desarrollado
 ### Funcionalidades Principales
 
 - **Entrada de Código Flexible**: El usuario puede pegar el código directamente en un área de texto o subir un archivo plano desde su equipo.
-- **Análisis Inteligente con IA**: Utiliza la API de Google Gemini para "leer" y comprender el código proporcionado.
+- **Análisis Inteligente con IA**: Utiliza la API de Google Gemini para "leer" y comprender el código proporcionado, con soporte para múltiples versiones de COBOL (ej. COBOL-85, Enterprise COBOL) y JCL (ej. z/OS JCL).
 - **Documentación Textual Automática**: Genera un resumen claro que incluye:
     - **Descripción Funcional**: Explica en lenguaje natural qué hace el programa.
     - **Entradas y Salidas**: Identifica los archivos o fuentes de datos que el programa utiliza y genera.
     - **Dependencias**: Lista los subprogramas, copybooks o procedimientos de los que depende el código.
-- **Visualización de Flujo de Proceso**: Crea un diagrama de flujo interactivo (usando Cytoscape.js) que representa la lógica del programa, permitiendo al usuario explorar visualmente el flujo de ejecución.
+- **Visualización de Flujo de Proceso**: Crea un diagrama de flujo interactivo (usando Cytoscape.js) que representa la lógica del programa.
+- **Manejo de Errores Inteligente**: Si el código no puede ser analizado (por errores de sintaxis, etc.), la herramienta informa al usuario con un mensaje detallado sobre el problema específico y limpia el área de entrada para un nuevo intento.
 
 ## 2. Diagrama de Arquitectura
 
-La aplicación sigue una arquitectura de cliente ligero, donde el frontend se encarga de toda la lógica de la interfaz y la comunicación directa con la API de Google Gemini. No se requiere un backend personalizado, lo que simplifica el despliegue y el mantenimiento.
+La aplicación sigue una arquitectura de cliente ligero, donde el frontend se encarga de toda la lógica de la interfaz y la comunicación directa con la API de Google Gemini.
 
 ```mermaid
 graph TD
     A[Usuario] --> B{Frontend (Browser)};
-    B -- "1. Ingresa código" --> C[index.tsx];
+    B -- "1. Ingresa código" --> C[index.js];
     C -- "2. Prepara y envía petición" --> D[Google Gemini API];
-    D -- "3. Analiza código y genera JSON" --> C;
-    C -- "4. Renderiza resultados" --> E[Análisis Textual (HTML)];
-    C -- "5. Renderiza diagrama" --> F[Diagrama de Flujo (Cytoscape.js)];
+    subgraph "Respuesta de la API"
+        D -- "Análisis Exitoso" --> D1[JSON con Documentación]
+        D -- "Análisis Fallido" --> D2[JSON con Mensaje de Error]
+    end
+    D1 --> C;
+    D2 --> C;
+    C -- "4a. Renderiza resultados" --> E[Análisis Textual y Diagrama];
+    C -- "4b. Muestra error y limpia input" --> F[Mensaje de Error en UI];
     E --> B;
     F --> B;
 ```
 
 **Flujo de Datos:**
-1.  El usuario introduce el código en la interfaz web.
-2.  El script `index.tsx` captura la entrada y la envía a la API de Gemini, junto con una instrucción detallada y un esquema de respuesta JSON.
-3.  La API de Gemini procesa el código y devuelve la información analizada en el formato JSON solicitado.
-4.  `index.tsx` recibe la respuesta JSON.
-5.  Los datos textuales se renderizan en la sección de resultados.
-6.  Los datos del diagrama se utilizan para generar un gráfico interactivo con la librería Cytoscape.js.
+1.  El usuario introduce el código.
+2.  `index.js` envía la entrada a la API de Gemini con un esquema de respuesta que puede contener los datos del análisis o un mensaje de error.
+3.  La API de Gemini procesa el código. Si tiene éxito, devuelve un JSON con la documentación. Si falla, devuelve un JSON con el motivo del error.
+4.  `index.js` recibe la respuesta. Si es exitosa, renderiza la documentación y el diagrama. Si es un error, lo muestra en la UI y limpia el campo de entrada.
 
 ## 3. Componentes de la Aplicación
 
-El proyecto está estructurado en los siguientes archivos principales:
-
--   `index.html`:
-    -   **Propósito**: Define la estructura principal de la página web.
-    -   **Contenido**: Incluye el encabezado, las pestañas para la entrada de código, el botón de análisis y los contenedores donde se mostrarán los resultados. También importa las librerías externas necesarias como Cytoscape.js y los estilos CSS.
-
--   `index.css`:
-    -   **Propósito**: Proporciona los estilos visuales para todos los elementos de la interfaz.
-    -   **Estilo**: Implementa un tema oscuro, moderno y profesional, asegurando que la aplicación sea responsiva y legible. Define la apariencia de las tarjetas, botones, área de texto y el contenedor del diagrama.
-
--   `index.tsx`:
-    -   **Propósito**: Es el cerebro de la aplicación. Contiene toda la lógica de cliente.
-    -   **Funciones Clave**:
-        -   **Inicialización**: Configura el cliente de la API de Google GenAI.
-        -   **Manejo de UI**: Controla el cambio entre pestañas (pegar vs. subir archivo) y la lectura del archivo subido.
-        -   **Llamada a la API (`handleAnalyze`)**: Construye la petición a la API de Gemini, incluyendo la instrucción del sistema (le pide a la IA que actúe como un experto en mainframe) y el `responseSchema` que fuerza una salida JSON estructurada y predecible.
-        -   **Renderizado de Resultados**: Procesa la respuesta JSON de la API y la muestra en el DOM. `renderResults` actualiza el texto y `renderFlowchart` dibuja el diagrama usando Cytoscape.js.
-        -   **Manejo de Errores**: Captura y muestra errores de la API de forma clara para el usuario.
-
--   `README.md`:
-    -   **Propósito**: Este archivo. Proporciona la documentación completa del proyecto para facilitar su comprensión y mantenimiento futuro.
-
--   `metadata.json`:
-    -   **Propósito**: Contiene metadatos de la aplicación, como su nombre y descripción, que pueden ser utilizados por la plataforma de despliegue.
+-   `index.html`: Define la estructura de la página. Incluye un layout de rejilla (`.results-grid`) en la sección de resultados para un diseño responsive.
+-   `index.css`: Proporciona los estilos visuales con un enfoque "mobile-first", asegurando que la aplicación sea responsive en móviles, tablets y PCs.
+-   `index.js`: Contiene toda la lógica de la aplicación, incluyendo el manejo de la UI, la llamada a la API de Gemini, el renderizado de resultados y el nuevo manejo de errores.
+-   `README.md`: Este archivo.
+-   `metadata.json`: Metadatos de la aplicación.
 
 ## 4. Stack Tecnológico
 
-La aplicación está construida con un conjunto de tecnologías modernas de frontend, enfocadas en la eficiencia y la interactividad.
-
 | Tecnología | Versión/Estándar | Propósito |
 | :--- | :--- | :--- |
-| **@google/genai** | `^1.10.0` | SDK oficial para interactuar con la API de Google Gemini. |
+| **@google/genai** | `^1.10.0` | SDK para interactuar con la API de Google Gemini. |
 | **Cytoscape.js** | `3.28.1` | Librería para la visualización de grafos interactivos. |
-| **TypeScript** | `~5.x` (implícito) | Lenguaje principal para la lógica de la aplicación. |
-| **HTML5** | Estándar web | Estructura y semántica del contenido. |
-| **CSS3** | Estándar web | Estilo y diseño visual de la aplicación. |
-| **ESM via importmap**| Estándar web | Gestión de módulos de JavaScript directamente en el navegador. |
+| **JavaScript (ES6)** | Estándar web | Lógica de la aplicación. |
+| **HTML5 / CSS3** | Estándar web | Estructura y diseño de la aplicación. |
 
 ## 5. Historial de Versiones y Tecnologías
 
-Este historial documenta las decisiones tecnológicas clave tomadas durante el desarrollo.
-
--   **v1.0 - Implementación Inicial**
-    -   **Diagramas:** Se utilizó `Mermaid.js` para la generación inicial de diagramas de flujo.
-    -   **Lógica:** Se estableció la arquitectura base de cliente ligero con comunicación directa a la API de Gemini.
-
--   **v1.1 - Mejora Visual del Diagrama (Versión Actual)**
-    -   **Cambio Tecnológico:** Se reemplazó `Mermaid.js` por **`Cytoscape.js v3.28.1`**.
-    -   **Motivo:** La necesidad de diagramas más interactivos (zoom, paneo) y un mayor control sobre el estilo visual de los nodos y conexiones para representar mejor la lógica del programa.
-    -   **Impacto:** Se actualizó la petición a la API de Gemini (`responseSchema`) para solicitar una estructura de datos JSON compatible con Cytoscape, mejorando significativamente la experiencia del usuario al analizar los flujos.
+-   **v1.0 - Implementación Inicial**: Uso de `Mermaid.js` para diagramas.
+-   **v1.1 - Mejora Visual del Diagrama**: Reemplazo de `Mermaid.js` por `Cytoscape.js` para mayor interactividad.
+-   **v1.2 - Robustez y Manejo de Errores**:
+    -   **Mejora de la IA**: Se actualizó la instrucción a la IA para soportar más dialectos de COBOL/JCL.
+    -   **Manejo de Errores**: Se implementó un schema de respuesta flexible que permite a la IA devolver un error detallado.
+-   **v1.3 - Diseño Responsive (Versión Actual)**:
+    -   **CSS Mobile-First**: Se rediseñaron los estilos para garantizar una experiencia óptima en móviles.
+    -   **Layout Adaptativo**: Se implementó un CSS Grid para que la sección de resultados se ajuste de 1 a 2 columnas según el ancho de la pantalla.
 
 ## 6. Mantenimiento y Extensibilidad
 
-Para mantener o extender la aplicación, considere los siguientes puntos:
+-   **Modificar el Análisis de la IA**: Ajuste el `systemInstruction` y el `responseSchema` en `index.js` para cambiar qué información se extrae.
+-   **Cambiar el Estilo del Diagrama**: Modifique el objeto de estilo en la función `renderFlowchart` en `index.js`.
 
--   **Modificar el Análisis de la IA**: Para cambiar qué información se extrae o cómo se interpreta, debe ajustar el `systemInstruction` y el `responseSchema` dentro de la función `handleAnalyze` en `index.tsx`.
--   **Cambiar el Estilo del Diagrama**: La apariencia del diagrama de flujo (colores, formas, fuentes) se define en el objeto de estilo dentro de la función `renderFlowchart` en `index.tsx`. Puede modificar los selectores de Cytoscape.js para ajustar el diseño.
--   **Actualizar Dependencias**: La aplicación utiliza dependencias externas como `@google/genai` y `cytoscape`. Se pueden actualizar sus versiones en `index.html`.
+## 7. Despliegue (GitHub Pages)
+
+Esta aplicación está diseñada para ser desplegada fácilmente como un sitio estático usando GitHub Pages.
+
+1.  **Ve a tu Repositorio**: Abre la página principal de tu repositorio en GitHub.
+2.  **Abre los Ajustes**: Haz clic en la pestaña de **"Settings"**.
+3.  **Selecciona "Pages"**: En el menú lateral izquierdo, haz clic en **"Pages"**.
+4.  **Configura la Fuente**:
+    -   Bajo "Source", selecciona **"Deploy from a branch"**.
+    -   Asegúrate de que la rama (`Branch`) esté configurada como `main`.
+    -   Deja la carpeta como `/(root)` y haz clic en **"Save"**.
+5.  **Espera la Publicación**: GitHub tardará unos minutos en desplegar tu sitio. La URL pública aparecerá en la misma página.

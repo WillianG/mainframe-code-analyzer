@@ -1,5 +1,6 @@
 {
   "name": "Mainframe Code Analyzer",
   "description": "An application to analyze mainframe code (COBOL, JCL) using AI to generate descriptions, dependency lists, and flowcharts.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "prompt": ""
 }
