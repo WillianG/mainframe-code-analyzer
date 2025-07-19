@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analizador de Código Mainframe</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;700&family=VT323&display=swap" rel="stylesheet">
+<script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@^1.10.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <main>
+        <header>
+            <div class="logo">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7 8L3 12L7 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M17 8L21 12L17 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M14 4L10 20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <h1>Analizador de Código Mainframe</h1>
+            <p>Pegue su código COBOL, JCL o suba un archivo para generar documentación y un diagrama de flujo.</p>
+        </header>
+
+        <section class="card" id="input-section">
+            <div class="tabs">
+                <button id="tab-paste" class="tab-button active" aria-selected="true">Pegar Código</button>
+                <button id="tab-upload" class="tab-button" aria-selected="false">Subir Archivo</button>
+            </div>
+            <div class="tab-content">
+                <div id="panel-paste" class="tab-panel active">
+                    <textarea id="code-input" placeholder="... Pegue aquí su código COBOL, JCL, etc. ..." aria-label="Área de entrada de código con estilo de terminal 3270"></textarea>
+                </div>
+                <div id="panel-upload" class="tab-panel">
+                    <label for="file-input" class="file-label">
+                        <span id="file-name">Seleccionar un archivo...</span>
+                    </label>
+                    <input type="file" id="file-input" accept=".txt,.cbl,.jcl,.cpy" aria-label="Selector de archivo de código">
+                </div>
+            </div>
+            <div class="button-group">
+                <button id="clear-button" class="secondary">
+                    <span class="button-text">Limpiar</span>
+                </button>
+                <button id="analyze-button">
+                    <span class="button-text">Analizar</span>
+                    <div class="spinner" style="display: none;"></div>
+                </button>
+            </div>
+        </section>
+
+        <section class="card" id="results-section" style="display: none;" aria-live="polite">
+            <h2>Resultados del Análisis</h2>
+            <div id="analysis-output"></div>
+            
+            <h3>Diagrama de Flujo del Proceso</h3>
+            <div class="diagram-container">
+                 <div id="flowchart-container" aria-label="Diagrama de flujo del proceso"></div>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+    <script type="module" src="index.tsx"></script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
